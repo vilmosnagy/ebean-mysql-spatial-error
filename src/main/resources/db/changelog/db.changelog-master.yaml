@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      - id: example-table
+        author: vilmos.nagy
+        changes:
+          - sql:
+              sql: create table test_position(id varchar(36), position point);
+              stripComments: true
+
