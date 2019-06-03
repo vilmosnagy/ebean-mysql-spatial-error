@@ -51,9 +51,9 @@ public class BaseLayout extends Div {
     private Query<TestPosition> getQuery() {
         return Ebean
             .createQuery(TestPosition.class)
-            .select("(st_distance(position, point(:lat, :lng)) * 1000 as distance)::Double")
-            .setParameter("lat", Double.valueOf(latitudeField.getValue()))
-            .setParameter("lng", Double.valueOf(longitudeField.getValue()));
+            .select("(st_distance(position, point(?, ?)) * 1000)::Double as distance")
+            .setParameter(1, Double.valueOf(latitudeField.getValue()))
+            .setParameter(2, Double.valueOf(longitudeField.getValue()));
     }
 
     private void countDistanceQuery() {
