@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "test_position")
-@ToString
+@ToString(of = "distance")
 public class TestPosition {
 
     @Id

@@ -8,6 +8,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import io.ebean.Ebean;
+import io.ebean.Expr;
 import io.ebean.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,19 +30,8 @@ public class BaseLayout extends Div {
         layout.add(longitudeField);
 
         layout.add(new Button("Generate some rows", event -> generateSomeRows()));
-        layout.add(new Button("Count with distance", event -> countDistanceQuery()));
         layout.add(new Button("List with distance", event -> fetchWithDistanceQuery()));
-        layout.add(new Button("List without distance", event -> fetchWithoutDistanceQuery()));
         layout.add(new Label("Result:"), label);
-    }
-
-    private void fetchWithoutDistanceQuery() {
-        label.setText(
-            Ebean
-                .createQuery(TestPosition.class)
-                .findList()
-                .toString()
-        );
     }
 
     private void fetchWithDistanceQuery() {
@@ -49,15 +39,26 @@ public class BaseLayout extends Div {
     }
 
     private Query<TestPosition> getQuery() {
+//          this soulution generates an invalid sql
+//        return Ebean
+//            .createQuery(TestPosition.class)
+//            .select("(st_distance(position, point(?, ?)) * 1000)::Double as distance")
+//            .setParameter(1, Double.valueOf(latitudeField.getValue()))
+//            .setParameter(2, Double.valueOf(longitudeField.getValue()))
+//            .order("distance asc")
+
+//          this soulution mixes the bind variables
+        TestPosition tp = Ebean.createQuery(TestPosition.class).findList().get(0);
+
         return Ebean
             .createQuery(TestPosition.class)
             .select("(st_distance(position, point(?, ?)) * 1000)::Double as distance")
             .setParameter(1, Double.valueOf(latitudeField.getValue()))
-            .setParameter(2, Double.valueOf(longitudeField.getValue()));
-    }
-
-    private void countDistanceQuery() {
-        label.setText("" + getQuery().findCount());
+            .setParameter(2, Double.valueOf(longitudeField.getValue()))
+            .order("st_distance(position, point(?, ?))")
+            .setParameter(3, Double.valueOf(latitudeField.getValue()))
+            .setParameter(4, Double.valueOf(longitudeField.getValue()))
+            .where(Expr.eq("id", tp.getId()));
     }
 
     private void generateSomeRows() {
